@@ -15,7 +15,7 @@ type ObjectGraph interface {
 
 // NewObjectGraph returns a new dependency graph using the given modules.
 func NewObjectGraph(modules ...Module) ObjectGraph {
-	var graph map[reflect.Type]provider
+	graph := make(map[reflect.Type]provider)
 	for _, module := range modules {
 		moduleType := reflect.TypeOf(module)
 		moduleValue := reflect.ValueOf(module)
@@ -40,9 +40,7 @@ func NewObjectGraph(modules ...Module) ObjectGraph {
 				dependencies = append(dependencies, method.Type.In(j))
 			}
 
-			var p provider
-			makeProvider(&p, moduleValue, method, nil)
-			graph[binding] = p
+			graph[binding] = makeProvider(moduleValue, dependencies)
 
 			fmt.Println(dependencies, binding)
 		}
@@ -50,26 +48,13 @@ func NewObjectGraph(modules ...Module) ObjectGraph {
 	return &objectGraph{graph}
 }
 
-func makeProvider(fptr interface{}, moduleValue reflect.Value, providerMethod reflect.Method, dependencyProviders ...provider) {
-	fn := reflect.ValueOf(fptr).Elem()
-	provide := func(in []reflect.Value) []reflect.Value {
-		if len(dependencyProviders) == 0 {
-			return providerMethod.Func.Call([]reflect.Value{moduleValue})
-		}
-
-		var dependencies []reflect.Value
-		dependencies = append(dependencies, moduleValue)
-		for _, p := range dependencyProviders {
-			v := p()
-			dependencies = append(dependencies, reflect.ValueOf(v))
-		}
-		return providerMethod.Func.Call(dependencies)
+func makeProvider(moduleValue reflect.Value, dependencies []reflect.Type) provider {
+	return func(o ObjectGraph) interface{} {
+		return nil
 	}
-	v := reflect.MakeFunc(fn.Type(), provide)
-	fn.Set(v)
 }
 
-type provider func() interface{}
+type provider func(o ObjectGraph) interface{}
 
 type objectGraph struct {
 	graph map[reflect.Type]provider
