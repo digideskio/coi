@@ -10,12 +10,12 @@ type ObjectGraph interface {
 	// Inject the fields of `target`.
 	Inject(target interface{})
 	// Get retrieves an object from the stores the result in the value pointed to by v.
-	Get(v interface{})
+	Get(reflect.Type) interface{}
 }
 
 // NewObjectGraph returns a new dependency graph using the given modules.
 func NewObjectGraph(modules ...Module) ObjectGraph {
-	graph := make(map[reflect.Type]provider)
+	graph := make(map[reflect.Type]*provider)
 	for _, module := range modules {
 		moduleType := reflect.TypeOf(module)
 		moduleValue := reflect.ValueOf(module)
@@ -40,7 +40,7 @@ func NewObjectGraph(modules ...Module) ObjectGraph {
 				dependencies = append(dependencies, method.Type.In(j))
 			}
 
-			graph[binding] = makeProvider(moduleValue, dependencies)
+			graph[binding] = &provider{moduleValue, dependencies, method}
 
 			fmt.Println(dependencies, binding)
 		}
@@ -48,20 +48,29 @@ func NewObjectGraph(modules ...Module) ObjectGraph {
 	return &objectGraph{graph}
 }
 
-func makeProvider(moduleValue reflect.Value, dependencies []reflect.Type) provider {
-	return func(o ObjectGraph) interface{} {
-		return nil
-	}
+type provider struct {
+	moduleValue    reflect.Value
+	dependencies   []reflect.Type
+	providerMethod reflect.Method
 }
 
-type provider func(o ObjectGraph) interface{}
+func (p *provider) get(o ObjectGraph) interface{} {
+	args := make([]reflect.Value, 0, 1+len(p.dependencies))
+	args = append(args, p.moduleValue)
+	for _, d := range p.dependencies {
+		args = append(args, reflect.ValueOf(o.Get(d)))
+	}
+	return p.providerMethod.Func.Call(args)[0].Interface()
+}
 
 type objectGraph struct {
-	graph map[reflect.Type]provider
+	graph map[reflect.Type]*provider
 }
 
 func (o *objectGraph) Inject(target interface{}) {
+	panic("not implemented")
 }
 
-func (o *objectGraph) Get(v interface{}) {
+func (o *objectGraph) Get(t reflect.Type) interface{} {
+	return o.graph[t].get(o)
 }
