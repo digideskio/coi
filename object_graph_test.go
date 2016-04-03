@@ -2,39 +2,34 @@ package dagger_test
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/bmizerany/assert"
 	"github.com/f2prateek/dagger-go"
-	"github.com/f2prateek/go-pointers"
 )
 
 type TestModule struct{}
 
-func (t *TestModule) ProvideHttpClient() *http.Client {
-	return http.DefaultClient
+func (t *TestModule) ProvideRoundTripper() http.RoundTripper {
+	return http.DefaultTransport
 }
 
-func (t *TestModule) ProvideLogger(out io.Writer) *log.Logger {
-	return log.New(out, "", log.LstdFlags)
-}
-
-func (t *TestModule) ProvideInt() *int {
-	return pointers.Int(4)
-}
-
-func (t *TestModule) ProvideString(a *int) *string {
-	return pointers.String(fmt.Sprintf("%d", *a))
+func (t *TestModule) ProvideHttpClient(transport http.RoundTripper) *http.Client {
+	return &http.Client{
+		Transport: transport,
+		Timeout:   10 * time.Minute,
+	}
 }
 
 func TestGraph(t *testing.T) {
 	graph := dagger.NewObjectGraph(&TestModule{})
-	s := graph.Get(reflect.TypeOf((*string)(nil))).(*string)
-	fmt.Println("got: ", *s)
+	var client *http.Client
+	client = graph.Get(reflect.TypeOf(client)).(*http.Client)
+	fmt.Println("http client timeout: ", client.Timeout)
 }
 
 type ProviderMethodReturnsMultiple struct{}
