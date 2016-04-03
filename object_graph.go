@@ -41,8 +41,6 @@ func NewObjectGraph(modules ...Module) ObjectGraph {
 			}
 
 			graph[binding] = &provider{moduleValue, dependencies, method}
-
-			fmt.Println(dependencies, binding)
 		}
 	}
 	return &objectGraph{graph}
