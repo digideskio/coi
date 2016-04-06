@@ -18,10 +18,14 @@ func (t *TestModule) ProvideRoundTripper() http.RoundTripper {
 	return http.DefaultTransport
 }
 
-func (t *TestModule) ProvideHttpClient(transport http.RoundTripper) *http.Client {
+func (t *TestModule) ProvideTimeout() time.Duration {
+	return 10 * time.Minute
+}
+
+func (t *TestModule) ProvideHttpClient(transport http.RoundTripper, timeout time.Duration) *http.Client {
 	return &http.Client{
 		Transport: transport,
-		Timeout:   10 * time.Minute,
+		Timeout:   timeout,
 	}
 }
 
@@ -35,11 +39,24 @@ func load(o dagger.ObjectGraph, v interface{}) {
 	rawValue.Set(reflect.ValueOf(value))
 }
 
-func TestGraph(t *testing.T) {
+func TestObjectGraphGet(t *testing.T) {
 	graph := dagger.NewObjectGraph(&TestModule{})
 	var client *http.Client
 	load(graph, &client)
 	fmt.Println("http client timeout: ", client.Timeout)
+}
+
+type TestTarget struct {
+	Client  *http.Client  `inject:""`
+	Timeout time.Duration `inject:""`
+}
+
+func TestObjectGraphInject(t *testing.T) {
+	graph := dagger.NewObjectGraph(&TestModule{})
+	target := &TestTarget{}
+	graph.Inject(target)
+	fmt.Println("http client timeout: ", target.Client.Timeout)
+	fmt.Println("timeout: ", target.Timeout)
 }
 
 type ProviderMethodReturnsMultiple struct{}

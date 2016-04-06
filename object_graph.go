@@ -3,6 +3,8 @@ package dagger
 import (
 	"fmt"
 	"reflect"
+
+	"github.com/facebookgo/structtag"
 )
 
 // ObjectGraph is a graph of objects linked by their dependencies.
@@ -65,8 +67,32 @@ type objectGraph struct {
 	graph map[reflect.Type]*provider
 }
 
-func (o *objectGraph) Inject(target interface{}) {
-	panic("not implemented")
+func (o *objectGraph) Inject(ptr interface{}) {
+	ptrType := reflect.TypeOf(ptr)
+	if ptrType.Kind() != reflect.Ptr {
+		panic("can only inject into pointers")
+	}
+
+	v := reflect.ValueOf(ptr).Elem()
+	if v.Kind() != reflect.Struct {
+		panic("must provide a pointer to struct")
+	}
+	t := reflect.TypeOf(v.Interface())
+
+	for i := 0; i < v.NumField(); i++ {
+		field := t.Field(i)
+		ok, _, err := structtag.Extract("inject", string(field.Tag))
+		if err != nil {
+			continue
+		}
+		if !ok {
+			continue
+		}
+
+		val := o.Get(field.Type)
+		fieldValue := v.Field(i)
+		fieldValue.Set(reflect.ValueOf(val))
+	}
 }
 
 func (o *objectGraph) Get(t reflect.Type) interface{} {
