@@ -2,18 +2,18 @@ package dagger
 
 // A Module contributes bindings to the object graph.
 //
-//   package application
+//   package coffeemaker
 //
-//   type AppModule struct {}
+//   type DripCoffeeModule struct {}
 //
 //   // ProvideHeater is invoked whenever a heater is required.
-//   func (*AppModule) ProvideHeater() *Heater {
-//     return &electricHeather{}
+//   func (*DripCoffeeModule) ProvideHeater() *Heater {
+//     return &ElectricHeater{}
 //   }
 //
-//   // Providers can have dependencies of their own.
+//   // Provider methods can have dependencies of their own.
 //   // ProvidePump is invoked with a thermosiphon whenever a pump is required.
-//   func (*AppModule) ProvidePump(pump *Thermosiphon) Pump {
+//   func (*DripCoffeeModule) ProvidePump(pump *Thermosiphon) Pump {
 //     return pump
 //   }
 type Module interface{}

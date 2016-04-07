@@ -11,7 +11,7 @@ import (
 type ObjectGraph interface {
 	// Inject the fields of `target`.
 	Inject(target interface{})
-	// Get retrieves an object from the stores the result in the value pointed to by v.
+	// Get retrieves an instance of the given type.
 	Get(reflect.Type) interface{}
 }
 
