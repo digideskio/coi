@@ -1,7 +1,6 @@
 package dagger_test
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"reflect"
@@ -43,7 +42,7 @@ func TestObjectGraphGet(t *testing.T) {
 	graph := dagger.NewObjectGraph(&TestModule{})
 	var client *http.Client
 	load(graph, &client)
-	fmt.Println("http client timeout: ", client.Timeout)
+	assert.Equal(t, 10*time.Minute, client.Timeout)
 }
 
 type TestTarget struct {
@@ -55,8 +54,8 @@ func TestObjectGraphInject(t *testing.T) {
 	graph := dagger.NewObjectGraph(&TestModule{})
 	target := &TestTarget{}
 	graph.Inject(target)
-	fmt.Println("http client timeout: ", target.Client.Timeout)
-	fmt.Println("timeout: ", target.Timeout)
+	assert.Equal(t, 10*time.Minute, target.Client.Timeout)
+	assert.Equal(t, 10*time.Minute, target.Timeout)
 }
 
 type ProviderMethodReturnsMultiple struct{}
