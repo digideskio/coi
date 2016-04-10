@@ -28,6 +28,11 @@ func (t *TestModule) ProvideHttpClient(transport http.RoundTripper, timeout time
 	}
 }
 
+type A struct {
+	Client  *http.Client  `inject:""`
+	Timeout time.Duration `inject:""`
+}
+
 func load(o dagger.ObjectGraph, v interface{}) {
 	valueType := reflect.TypeOf(v)
 	if valueType.Kind() != reflect.Ptr {
@@ -45,17 +50,12 @@ func TestObjectGraphGet(t *testing.T) {
 	assert.Equal(t, 10*time.Minute, client.Timeout)
 }
 
-type TestTarget struct {
-	Client  *http.Client  `inject:""`
-	Timeout time.Duration `inject:""`
-}
-
 func TestObjectGraphInject(t *testing.T) {
 	graph := dagger.NewObjectGraph(&TestModule{})
-	target := &TestTarget{}
-	graph.Inject(target)
-	assert.Equal(t, 10*time.Minute, target.Client.Timeout)
-	assert.Equal(t, 10*time.Minute, target.Timeout)
+	a := &A{}
+	graph.Inject(a)
+	assert.Equal(t, 10*time.Minute, a.Client.Timeout)
+	assert.Equal(t, 10*time.Minute, a.Timeout)
 }
 
 type ProviderMethodReturnsMultiple struct{}
