@@ -17,7 +17,7 @@ type ObjectGraph interface {
 
 // NewObjectGraph returns a new dependency graph using the given modules.
 func NewObjectGraph(modules ...Module) ObjectGraph {
-	graph := make(map[reflect.Type]*provider)
+	graph := make(map[reflect.Type]*moduleProvider)
 	for _, module := range modules {
 		moduleType := reflect.TypeOf(module)
 		moduleValue := reflect.ValueOf(module)
@@ -42,19 +42,19 @@ func NewObjectGraph(modules ...Module) ObjectGraph {
 				dependencies = append(dependencies, method.Type.In(j))
 			}
 
-			graph[binding] = &provider{moduleValue, dependencies, method}
+			graph[binding] = &moduleProvider{moduleValue, dependencies, method}
 		}
 	}
 	return &objectGraph{graph}
 }
 
-type provider struct {
+type moduleProvider struct {
 	moduleValue    reflect.Value
 	dependencies   []reflect.Type
 	providerMethod reflect.Method
 }
 
-func (p *provider) get(o ObjectGraph) interface{} {
+func (p *moduleProvider) get(o ObjectGraph) interface{} {
 	args := make([]reflect.Value, 0, 1+len(p.dependencies))
 	args = append(args, p.moduleValue)
 	for _, d := range p.dependencies {
@@ -64,7 +64,7 @@ func (p *provider) get(o ObjectGraph) interface{} {
 }
 
 type objectGraph struct {
-	graph map[reflect.Type]*provider
+	graph map[reflect.Type]*moduleProvider
 }
 
 func (o *objectGraph) Inject(ptr interface{}) {
