@@ -83,7 +83,7 @@ func (o *objectGraph) Inject(ptr interface{}) {
 		field := t.Field(i)
 		ok, _, err := structtag.Extract("inject", string(field.Tag))
 		if err != nil {
-			continue
+			panic("could not extract struct tag")
 		}
 		if !ok {
 			continue
