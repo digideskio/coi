@@ -96,5 +96,10 @@ func (o *objectGraph) Inject(ptr interface{}) {
 }
 
 func (o *objectGraph) Get(t reflect.Type) interface{} {
-	return o.moduleProviders[t].get(o)
+	moduleProvider, ok := o.moduleProviders[t]
+	if ok {
+		return moduleProvider.get(o)
+	}
+
+	panic("not implemented")
 }
