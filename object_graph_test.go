@@ -50,6 +50,17 @@ func TestObjectGraphGet(t *testing.T) {
 	assert.Equal(t, 10*time.Minute, client.Timeout)
 }
 
+type B struct {
+	ADependency A `inject:""`
+}
+
+func TestObjectGraphGetNonModuleDependencies(t *testing.T) {
+	graph := dagger.NewObjectGraph(&TestModule{})
+	var b *B
+	load(graph, &b)
+	assert.Equal(t, 10*time.Minute, b.ADependency.Client.Timeout)
+}
+
 func TestObjectGraphInject(t *testing.T) {
 	graph := dagger.NewObjectGraph(&TestModule{})
 	a := &A{}

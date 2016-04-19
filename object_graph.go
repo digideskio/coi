@@ -96,10 +96,34 @@ func (o *objectGraph) Inject(ptr interface{}) {
 }
 
 func (o *objectGraph) Get(t reflect.Type) interface{} {
-	moduleProvider, ok := o.moduleProviders[t]
-	if ok {
+	if moduleProvider, ok := o.moduleProviders[t]; ok {
 		return moduleProvider.get(o)
 	}
 
-	panic("not implemented")
+	var val reflect.Value
+	if t.Kind() == reflect.Ptr {
+		val = reflect.New(t.Elem())
+	} else {
+		val = reflect.New(t)
+	}
+
+	for i := 0; i < val.Elem().Type().NumField(); i++ {
+		field := val.Elem().Type().Field(i)
+		ok, _, err := structtag.Extract("inject", string(field.Tag))
+		if err != nil {
+			panic("could not extract struct tag")
+		}
+		if !ok {
+			continue
+		}
+
+		fieldValue := val.Elem().Field(i)
+		providedValue := o.Get(fieldValue.Type())
+		fieldValue.Set(reflect.ValueOf(providedValue))
+	}
+
+	if t.Kind() == reflect.Ptr {
+		return val.Interface()
+	}
+	return val.Elem().Interface()
 }
