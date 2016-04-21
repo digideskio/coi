@@ -100,15 +100,15 @@ func (o *objectGraph) Get(t reflect.Type) interface{} {
 		return moduleProvider.get(o)
 	}
 
-	var val reflect.Value
-	if t.Kind() == reflect.Ptr {
-		val = reflect.New(t.Elem())
-	} else {
-		val = reflect.New(t)
+	rawType := getRawType(t)
+	if rawType.Kind() != reflect.Struct {
+		panic("only structs can be provided without modules")
 	}
+	valPtr := reflect.New(rawType)
+	valElem := valPtr.Elem()
 
-	for i := 0; i < val.Elem().Type().NumField(); i++ {
-		field := val.Elem().Type().Field(i)
+	for i := 0; i < rawType.NumField(); i++ {
+		field := rawType.Field(i)
 		ok, _, err := structtag.Extract("inject", string(field.Tag))
 		if err != nil {
 			panic("could not extract struct tag")
@@ -117,13 +117,13 @@ func (o *objectGraph) Get(t reflect.Type) interface{} {
 			continue
 		}
 
-		fieldValue := val.Elem().Field(i)
+		fieldValue := valElem.Field(i)
 		providedValue := o.Get(fieldValue.Type())
 		fieldValue.Set(reflect.ValueOf(providedValue))
 	}
 
 	if t.Kind() == reflect.Ptr {
-		return val.Interface()
+		return valPtr.Interface()
 	}
-	return val.Elem().Interface()
+	return valElem.Interface()
 }
