@@ -78,7 +78,7 @@ func (*ProviderMethodReturnsMultiple) ProvideMultiple() (*log.Logger, *http.Clie
 func TestProviderMethodReturningMultiplePanics(t *testing.T) {
 	defer func() {
 		err := recover().(error)
-		assert.Equal(t, "Provider methods can return only one argument. func(*dagger_test.ProviderMethodReturnsMultiple) (*log.Logger, *http.Client) returns 2 values.", err.Error())
+		assert.Equal(t, "Provider methods can return only one argument. func(*coi_test.ProviderMethodReturnsMultiple) (*log.Logger, *http.Client) returns 2 values.", err.Error())
 	}()
 
 	coi.NewObjectGraph(&ProviderMethodReturnsMultiple{})
