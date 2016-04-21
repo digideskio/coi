@@ -1,4 +1,4 @@
-package dagger_test
+package coi_test
 
 import (
 	"log"
@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/bmizerany/assert"
-	"github.com/f2prateek/dagger-go"
+	"github.com/f2prateek/coi"
 )
 
 type TestModule struct{}
@@ -33,7 +33,7 @@ type A struct {
 	Timeout time.Duration `inject:""`
 }
 
-func load(o dagger.ObjectGraph, v interface{}) {
+func load(o coi.ObjectGraph, v interface{}) {
 	valueType := reflect.TypeOf(v)
 	if valueType.Kind() != reflect.Ptr {
 		panic("can only load into a pointer")
@@ -44,7 +44,7 @@ func load(o dagger.ObjectGraph, v interface{}) {
 }
 
 func TestObjectGraphGet(t *testing.T) {
-	graph := dagger.NewObjectGraph(&TestModule{})
+	graph := coi.NewObjectGraph(&TestModule{})
 	var client *http.Client
 	load(graph, &client)
 	assert.Equal(t, 10*time.Minute, client.Timeout)
@@ -55,14 +55,14 @@ type B struct {
 }
 
 func TestObjectGraphGetNonModuleDependencies(t *testing.T) {
-	graph := dagger.NewObjectGraph(&TestModule{})
+	graph := coi.NewObjectGraph(&TestModule{})
 	var b *B
 	load(graph, &b)
 	assert.Equal(t, 10*time.Minute, b.ADependency.Client.Timeout)
 }
 
 func TestObjectGraphInject(t *testing.T) {
-	graph := dagger.NewObjectGraph(&TestModule{})
+	graph := coi.NewObjectGraph(&TestModule{})
 	a := &A{}
 	graph.Inject(a)
 	assert.Equal(t, 10*time.Minute, a.Client.Timeout)
@@ -81,5 +81,5 @@ func TestProviderMethodReturningMultiplePanics(t *testing.T) {
 		assert.Equal(t, "Provider methods can return only one argument. func(*dagger_test.ProviderMethodReturnsMultiple) (*log.Logger, *http.Client) returns 2 values.", err.Error())
 	}()
 
-	dagger.NewObjectGraph(&ProviderMethodReturnsMultiple{})
+	coi.NewObjectGraph(&ProviderMethodReturnsMultiple{})
 }

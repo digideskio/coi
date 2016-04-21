@@ -1,2 +1,2 @@
-// Package dagger is a dependency injector for Go.
-package dagger
+// Package coi is a dependency injector for Go.
+package coi

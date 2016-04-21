@@ -1,6 +1,6 @@
-# dagger-go
+# coi
 
-Dagger is a dependency injector for Go.
+CoI is a dependency injector for Go.
 
 Typically components wire up their own dependencies.
 
@@ -26,7 +26,7 @@ func NewCoffeeApp(heater *Heater, pump Pump) *CoffeeApp {
 
 Dependency injection facilitates creating different environments, and makes it easy to swap out your `ProdLogger` for an in-memory `TestLogger`.  Or swap it for `DevLogger` during development.
 
-Wiring up this graph throughout your app is tedious and boring. Dagger eliminates the clumsy duct that wires your dependencies. Simply declare your dependencies, specify how to satisfy them, and profit!
+Wiring up this graph throughout your app is tedious and boring. CoI eliminates the clumsy duct that wires your dependencies. Simply declare your dependencies, specify how to satisfy them, and profit!
 
 ## Providing Dependencies
 
@@ -69,7 +69,7 @@ func (*DripCoffeeModule) ProvidePump(pump *Thermosiphon) Pump {
 The `ObjectGraph` forms a graph of dependencies. It composes modules and their provider methods to satisfy dependencies when requested.
 
 ```go
-objectGraph := dagger.NewObjectGraph(&DripCoffeeModule{})
+objectGraph := coi.NewObjectGraph(&DripCoffeeModule{})
 
 coffeeApp := &CoffeeApp{}
 objectGraph.Inject(coffeeApp)

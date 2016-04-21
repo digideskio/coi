@@ -1,4 +1,4 @@
-package dagger
+package coi
 
 import (
 	"reflect"

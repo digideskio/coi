@@ -1,4 +1,4 @@
-package dagger
+package coi
 
 // A Module contributes bindings to the object graph.
 //
